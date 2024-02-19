@@ -1,0 +1,60 @@
+﻿@using src.Core
+@using src.Web.Common
+
+@inject IUserSession UserSession
+
+<style>
+    li:hover a .nav_account {
+        color:black
+    }
+    li a .nav_account {
+        color:aliceblue;
+    }
+</style>
+@if (User.Identity.IsAuthenticated)
+{
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle "  data-toggle="dropdown">
+            <div class="nav_account">
+                <i class="fa fa-user"></i> <span> Hello, @UserSession.FirstName!</span> <i class="fa fa-caret-down"></i>
+            </div>
+        </a>
+        <ul class="dropdown-menu" style= "min-width: 150px; padding-left: 15px;" >
+            <li>
+                <form>
+                    <a href="@Url.Action("Index", "Request",new { area = "" })">
+                        <i class="fa fa-home"></i> <span>Home</span>
+                    </a>
+                </form>
+            </li>
+            @if (!UserSession.IsInRole(Constants.RoleNames.User))
+            {
+                <li>
+                    <form>
+                        <a href="@Url.Action("Index", "Dashboard",new { area = Constants.Areas.Administration })">
+                            <i class="fa fa-dashboard"></i><span>Dashboard</span>
+                        </a>
+                    </form>
+                </li>
+            }
+            <li>
+                <form>
+                    <a href="@Url.Action("Index", "History",new { area= "" })">
+                        <i class="fa fa-history"></i> <span>History</span>
+                    </a>
+                </form>
+            </li>          
+            <li>
+                <form asp-area="" asp-controller="Account" asp-action="Logout"  method="post" id="logoutForm">
+                    @Html.AntiForgeryToken()
+                    <a href="javascript:document.getElementById('logoutForm').submit()">
+                        <i class="fa fa-sign-out"></i> <span>Sign out</span>
+                    </a>
+                    <input name="__RequestVerificationToken" type="hidden" value="CfDJ8Ke-V_UacMhNjMfcpFm5zOXEkGW6J75y0O1r8dSrYY4fxN7tbrKP1Zty8bm7AI5QO8_5zfnKvVRQ2Vhl8tX3ru7CYZu6vfVd_Bdrk0vQeuqZy-p_cHbZgOF8Ml0KfoY_0Jhyk297zM6NPkxGmQBHbx6NklgXb9Iu982E3CiRqDZVBglQRN8iId5iYevY4RDgXQ" />
+                </form>
+
+            </li>
+
+        </ul>      
+    </li>
+}

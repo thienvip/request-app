@@ -1,0 +1,149 @@
+﻿@model IEnumerable<src.Core.Domains.ChangeRequest>
+@{
+    var rowIndex = 1;
+}
+
+
+
+<style>
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+        border: 1px solid #ddd;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+    }
+</style>
+
+<div style="overflow-x:auto; margin-top:10px !important" class="box-body">
+    <small class="text-red">Histories</small>
+    <table id="myTable" class="table table-striped">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Requester</th>
+                <th>Campus</th>
+                <th>Application</th>
+                <th>Request Type</th>
+                <th>Priority</th>
+                <th>Description</th>
+                <th>Created Date</th>
+                <th>State</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var request in Model.OrderByDescending(s => s.CreatedDate))
+            {
+                if (request != null)
+                {
+                    <tr class="clickable-row" data-request-id="@request.Id">
+                        <td>@rowIndex</td>
+                        <td>@request.Requester</td>
+                        <td>@request.Campus</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(request.Applications?.Name))
+                            {
+                                @request.Applications.Name
+                            }
+                            else
+                            {
+                                @request.ApplicationOtherName
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(request.ChangeRequestTypes?.Name))
+                            {
+                                @request.ChangeRequestTypes.Name
+                            }
+                            else
+                            {
+                                @request.ChangeRequestOtherName
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(request.Prioritys?.Name))
+                            {
+                                @request.Prioritys.Name
+                            }
+                            else
+                            {
+                                @request.PriorityExpectedDate?.ToString("dd/MM/yyyy HH:mm")
+                            }
+                        </td>
+                        @* <td>@request.Description</td> *@
+                        <td>@request.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @if (request.ChangeRequestFlow?.NextStateUserInCharge != null && request.ChangeRequestFlow?.Status == false || request.ChangeRequestFlow?.Status == null)
+                            {
+                                <span class="label label-success">@request.ChangeRequestFlow?.State</span>
+                            }
+                            else
+                            {
+                                <span class="label label-danger">@request.ChangeRequestFlow?.State</span>
+                            }
+                        </td>
+                        
+                    </tr>
+                    rowIndex++;
+                }
+            }
+        </tbody>
+    </table>
+</div>
+    <div class="modal  fade" id="modalDefault" abindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg  " style="width:90%">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+
+<script>
+    $(document).ready(function () {
+        dataTable = $('#myTable').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": false,
+            "bInfo": false,
+            "pageLength": 10,
+         
+            rowCallback: function (row, data) {
+                $(row).on("click", function () {
+                    var requestId = $(this).data('request-id');
+                    var url = "/Request/DetailModal/" + requestId;
+                    ShowPopup(url);
+                });
+            },
+            
+        });
+
+       
+        function ShowPopup(url) {
+            var modalId = 'modalDefault';
+            var modalPlaceholder = $('#' + modalId + ' .modal-dialog .modal-content');
+            $.get(url)
+                .done(function (response) {
+                    modalPlaceholder.html(response);
+                    popup = $('#' + modalId + '').modal({
+                        keyboard: false,
+                        backdrop: 'static'
+                    });
+                });
+        }
+
+        $(document).keyup(function (e) {
+            if (e.key === "Escape") {
+                $('#modalDefault').modal('hide');
+            }
+        });
+    });
+    $('#myTable tbody').on('click', '#GetDetails', function () {
+        var data = dataTable.row($(this).parents('tr')).data();
+        console.log(data);
+    });
+</script>

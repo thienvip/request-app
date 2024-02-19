@@ -1,0 +1,229 @@
+﻿@using src.Core
+@using src.Web.Common
+@inject IUserSession UserSession
+@model src.Web.Common.Models.RequestModels.RequestViewModel
+@{
+    ViewBag.Title = Constants.MainPages.Requests;
+    var rowIndex = 1;
+    var rowIndex2 = 1;  
+}
+
+<style>
+    .toolbar {
+        float: left;
+    }
+</style>
+
+
+<div class="content-header clearfix">
+    <h1 class="pull-left">
+        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> @ViewBag.Title
+    </h1>
+</div>
+
+<div class="content">
+    <div class="box box-info">
+         <!-- /.box-header -->
+        <!-- form start -->
+        <form class="form-horizontal">
+            <div class="box-body">
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; justify-content:center; font-size:15px; text-transform:uppercase">CHANGE REQUESTS</label>
+                </div>              
+                <table id="myTable" class="table table-striped table-bordered table-hover " style="width:100%;cursor:pointer">
+                    <thead>
+                        <tr>                           
+                            <th>Requester</th>
+                            <th>Campus</th>
+                            <th>Application</th>
+                            <th>Request Type</th>
+                            <th>Priority</th>
+                            <th>Created Date</th>
+                            <th>Updated User</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </form>      
+    </div>
+</div>
+
+
+<div class="content">
+    <div class="box box-info">       
+        <form class="form-horizontal" >
+            <div class="box-body">
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; justify-content:center; font-size:15px; text-transform:uppercase">CHANGE REQUESTS ACCEPTED</label>
+                </div>
+                <table id="completedTable" class="table table-striped table-bordered table-hover" style="width:100%;cursor:pointer">
+                    <thead>
+                        <tr>                        
+                            <th>Requester</th>
+                            <th>Campus</th>
+                            <th>Application</th>
+                            <th>Request Type</th>
+                            <th>Priority</th>
+                            <th>Created Date</th>
+                            <th>Updated User</th>
+                            <th>State</th>                    
+                        </tr>
+                    </thead>                  
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+          
+        var dataTable = $('#myTable').DataTable({         
+            "ajax": {
+                "url": '@Url.Action("GetRequestChanges", "Requests")',
+                "type": 'GET',
+                "datatype": 'json',
+                error: function (req, err) {
+                    alert('failure');
+                    HideLoadingMessage();
+                }
+            },
+            "columns": [{
+                "data": "Requester"
+            },
+            {
+                "data": "Campus"
+            },
+            {
+                "data": "Application",
+                "render": function (data, type, row) {
+                    return data != "" ? data : row.ApplicationOtherName;
+                }
+            },
+            {
+                "data": "RequestType",
+                "render": function (data, type, row) {
+                    return data != "" ? data : row.RequestTypeOtherName;
+                }
+            },
+            {
+                "data": "Priority",
+            },
+            {
+                "data": "CreatedDate",
+                "render": function (data, type, row) {
+                    return data
+                }
+            },
+            {
+                "data": "UpdatedUser",
+            },
+            {
+                "data": "State",
+                "render": function (data, type, row) {
+                    if (row.Status == false) {
+                        return '<span class="label label-success">' + data + '</span>';
+                    } else {
+                        return '<span class="label label-danger">' + data + '</span>';
+                    }
+                }
+            },
+            ],
+            "lengthChange": false,
+            "ordering": false,          
+            "bInfo": false,
+            "pageLength": 10,
+            "dom": '<"toolbar">frtip',
+            "scrollX": 'auto',
+            rowCallback: function (row, data) {
+                $(row).on("click", function () {
+                    var requestId = data.Id;
+                    var url = "/Administration/Requests/Detail/" + requestId;
+                    window.location.href = url;               
+                });
+            },
+        });
+
+        
+    
+        var dataTable2= $('#completedTable').DataTable({
+            "ajax": {
+                "url": '@Url.Action("GetCompletedRequestChanges", "Requests")',
+                "type": 'GET',
+                "datatype": 'json',             
+                error: function (req, err) {
+                    alert('failure');
+                    HideLoadingMessage();
+                }
+            },
+            "columns": [{
+                "data": "Requester"
+            },
+            {
+                "data": "Campus"
+            },
+            {
+                "data": "Application",
+                "render": function (data, type, row) {
+                    return data != "" ? data : row.ApplicationOtherName;
+                }
+            },
+            {
+                "data": "RequestType",
+                "render": function (data, type, row) {
+                    return data != "" ? data : row.RequestTypeOtherName;
+                }
+            },
+            {
+                "data": "Priority",
+            },
+            {
+                "data": "CreatedDate",
+                "render": function (data, type, row) {
+                    return data
+                }
+            },
+            {
+                "data": "UpdatedUser",
+            },
+            {
+                "data": "State",
+                "render": function (data, type, row) {
+                    if (row.Status == false) {
+                        return '<span class="label label-success">' + data + '</span>';
+                    } else {
+                        return '<span class="label label-danger">' + data + '</span>';
+                    }
+                }
+            },
+            ],
+            "lengthChange": false,
+            "ordering": false,
+            "bInfo": false,
+            "pageLength": 10,
+            "scrollX": 'auto',
+            rowCallback: function (row, data) {
+                $(row).on("click", function () {                  
+                    var additionalParameter = "disable";
+                    var requestId = data.Id;
+                    var url = "/Administration/Requests/Detail/" + requestId + "?param=" + encodeURIComponent(additionalParameter);;
+                    window.location.href = url;
+                    
+                });
+            },
+        });
+
+       
+    });
+</script>
+
+@if (UserSession.IsInRole(Constants.RoleNames.Administrator) || UserSession.IsInRole(Constants.RoleNames.IT))
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            document.querySelector('div.toolbar').innerHTML = '<small id="showAllRequestsBtn"><a href="@Url.Action("RequestsTracker", "Requests", new { area = Constants.Areas.Administration })">Show Requests Tracker</a></small>';
+            
+        });      
+    </script>
+}

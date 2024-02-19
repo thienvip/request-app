@@ -1,0 +1,148 @@
+﻿@using src.Core
+@{
+    ViewBag.Title = Constants.MainPages.Requests;
+ 
+}
+
+<div class="content-header clearfix">
+    <h1 class="pull-left">
+        <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> @ViewBag.Title Tracker
+    </h1>
+</div>
+
+<div class="content">
+    <div class="box box-info">
+        <!-- /.box-header -->
+        <!-- form start -->
+        <form class="form-horizontal">
+            <div class="box-body">
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; justify-content:center; font-size:15px; text-transform:uppercase">CHANGE REQUESTS TRACKER</label>
+                </div>             
+                <table id="myTable" class="table table-striped table-bordered table-hover " style="width:100%;cursor:pointer">
+                    <thead>
+                        <tr>
+                            <th>Requester</th>
+                            <th>Campus</th>
+                            <th>Application</th>
+                            <th>Request Type</th>
+                            <th>Priority</th>
+                            <th>Created Date</th>
+                            <th>Updated User</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>                  
+                </table>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal  fade" id="modalDefault" abindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg  " style="width:90%">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+      
+        dataTable = $('#myTable').DataTable({
+            "ajax": {
+                "url": '@Url.Action("GetRequestsTracker", "Requests")',
+                "type": 'GET',
+                "datatype": 'json',
+                error: function (req, err) {
+                    alert('failure');
+                    HideLoadingMessage();
+                }
+            },
+            "columns": [{
+                "data": "Requester"
+            },
+            {
+                "data": "Campus"
+            },
+            {
+                "data": "Application",
+                "render": function (data, type, row) {
+                    return data != "" ? data : row.ApplicationOtherName;
+                }
+            },           
+            {
+                "data": "RequestType",
+                "render": function (data, type, row) {
+                    return data != "" ? data : row.RequestTypeOtherName;
+                }
+            },
+            {
+                "data": "Priority",
+            },
+            {
+                "data": "CreatedDate",
+                "render": function (data, type, row) {
+                    return data
+                }
+            },
+            {
+                "data": "UpdatedUser",
+            },
+            {
+                "data": "State",
+                "render": function (data, type, row) {
+                    if (row.Status == false) {
+                        return '<span class="label label-success">' + data + '</span>';
+                    } else {
+                        return '<span class="label label-danger">' + data + '</span>';
+                    }
+                }
+            },
+            ],
+            "rowCallback": function (row, data) {
+                $(row).on("click", function () {
+                    var requestId = data.Id;
+                    var url = "/Administration/Requests/Detail/" + requestId;
+                    window.location.href = url;
+                });
+            },
+            "scrollX": true,
+            "retrieve": true,
+            "language": {
+                "emptyTable": "no data found."
+            },
+            "lengthChange": false,
+            "order": [
+                [5, 'desc']
+            ],
+            "pageLength": 10,
+            "info": false
+        });
+
+        $('#myTable tbody').on('click', '#GetDetails', function () {
+            var data = dataTable.row($(this).parents('tr')).data();
+            console.log(data);
+        });    
+        
+        function ShowPopup(url) {
+            var modalId = 'modalDefault';
+            var modalPlaceholder = $('#' + modalId + ' .modal-dialog .modal-content');
+            $.get(url)
+                .done(function (response) {
+                    modalPlaceholder.html(response);
+                    popup = $('#' + modalId + '').modal({
+                        keyboard: false,
+                        backdrop: 'static'
+                    });
+                });
+        }
+
+        $(document).keyup(function (e) {
+            if (e.key === "Escape") {
+                $('#modalDefault').modal('hide');
+            }
+        });
+    })
+
+    
+</script>

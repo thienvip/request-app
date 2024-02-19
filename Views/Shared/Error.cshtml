@@ -1,0 +1,19 @@
+﻿@using src.Core
+@{
+    ViewData["Title"] = Constants.MainPages.Error;
+    Layout = "_Layout";
+}
+<div class="container">
+    <div class="row">
+        <div class="span12">
+            <section class="content-header clearfix">
+                <h1><i class="fa fa-exclamation-triangle text-danger" aria-hidden="true"></i> @ViewData["Title"]</h1>
+
+            </section>
+            @Html.Raw(Constants.Messages.Error)
+
+            <a asp-controller="Home" asp-action="Index" class="btn btn-warning" style="margin-bottom:20px;"><i class="fa  fa-arrow-circle-o-left"></i> Back to home page/Trở về trang chủ</a>
+
+        </div>
+    </div>
+</div>

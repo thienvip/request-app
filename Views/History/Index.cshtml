@@ -1,0 +1,166 @@
+﻿@using src.Core
+@{
+    ViewBag.Title = Constants.MainPages.History;
+    var rowIndex = 1;
+}
+
+@model IEnumerable<src.Core.Domains.ChangeRequest>
+
+<style>
+    .dtable-container {
+        max-width: 100% !important;
+    }
+
+    table {
+        white-space: nowrap !important;
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+    .modal-dialog {
+        width: 75%;
+        margin: 0 auto;
+    }
+
+    .toolbar {
+        float: left;
+    }
+
+</style>
+
+<div class="box box-solid">
+    <form class="form-horizontal" method="POST">
+        <div class="box-body">
+            <div class="form-group">
+                <label style="display:flex; align-items:center; justify-content:center; font-size:15px; text-transform:uppercase">@SharedLocalizer["title_history"]</label>
+            </div>
+            <div class="dtable-container">              
+                <table id="myTable" class="table table-striped table-hover table-bordered" style="width:100%;cursor:pointer">
+                    <thead>
+                        <tr class="bg-primary">
+                            <th>No.</th>
+                            <th>Requester</th>
+                            <th>Campus</th>
+                            <th>Application</th>
+                            <th>Request Type</th>
+                            <th>Priority</th>                            
+                            <th>Created Date</th>
+                            <th>Updated User</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var request in Model.OrderByDescending(s => s.CreatedDate))
+                        {
+                            if (request != null)
+                            {
+                                <tr class="clickable-row" data-request-id="@request.Id">
+                                    <td>@rowIndex</td>
+                                    <td>@request.Requester</td>
+                                    <td>@request.Campus</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(request.Applications?.Name))
+                                        {
+                                            @request.Applications.Name
+                                        }
+                                        else
+                                        {
+                                            @request.ApplicationOtherName
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(request.ChangeRequestTypes?.Name))
+                                        {
+                                            @request.ChangeRequestTypes.Name
+                                        }
+                                        else
+                                        {
+                                            @request.ChangeRequestOtherName
+                                        }
+                                    </td>
+                                    <td>
+                                        @request.Prioritys.Name                              
+                                    </td>                                  
+                                    <td>@request.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @request.ChangeRequestFlow?.User.UserName
+                                    </td>
+                                    <td>
+                                        @if (request.ChangeRequestFlow?.NextStateUserInCharge != null && request.ChangeRequestFlow?.Status == false || request.ChangeRequestFlow?.Status == null)
+                                        {
+                                            <span class="label label-success">@request.ChangeRequestFlow?.State</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="label label-danger">@request.ChangeRequestFlow?.State</span>
+                                        }
+                                    </td>
+
+                                </tr>
+                                rowIndex++;
+                            }
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+        <div class="modal  fade" id="modalDefault" abindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg  " style="width:90%">
+                <div class="modal-content">
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+<script type="text/javascript">
+
+    
+
+    $(document).ready(function () {
+
+
+        dataTable = $('#myTable').DataTable({
+            "lengthChange": false,
+            "ordering": false,
+            "searching": true,
+            "bInfo": false,
+            "pageLength": 10,
+            "dom": '<"toolbar">frtip',
+            "rowCallback": function (row, data) {
+                $(row).on("click", function () {
+                    var requestId = $(this).data('request-id');
+                    var url = "/Request/DetailModal/" + requestId;
+                    ShowPopup(url);
+                });
+            },
+
+        });
+
+        document.querySelector('div.toolbar').innerHTML = '<small class="text-red">Histories</small>';
+
+        function ShowPopup(url) {
+            var modalId = 'modalDefault';
+            var modalPlaceholder = $('#' + modalId + ' .modal-dialog .modal-content');
+            $.get(url)
+                .done(function (response) {
+                    modalPlaceholder.html(response);
+                    popup = $('#' + modalId + '').modal({
+                        keyboard: false,
+                        backdrop: 'static'
+                    });
+                });
+        }
+
+        $(document).keyup(function (e) {
+            if (e.key === "Escape") {
+                $('#modalDefault').modal('hide');
+            }
+        });
+    });
+  
+</script>

@@ -1,0 +1,33 @@
+﻿@using src.Web.Extensions;
+@using src.Core
+@using src.Web.Common
+
+
+@inject IUserSession UserSession
+
+<ul class="sidebar-menu" data-widget="tree">
+    <li class="header">MAIN NAVIGATION</li>
+
+    <li class="@(Html.IsMenuActive("/Administration/Dashboard") ? "active" : "") ">
+        <a href="~/Administration/Dashboard">
+            <i class="fa fa-desktop"></i>
+            <span>@Constants.MainPages.Dashboard</span>
+         </a>
+     </li>
+    @if (User.Identity.IsAuthenticated && UserSession.IsInRole(Constants.RoleNames.Administrator) || UserSession.IsInRole(Constants.RoleNames.Supporter) || UserSession.IsInRole(Constants.RoleNames.BO) || UserSession.IsInRole(Constants.RoleNames.IT))
+    {
+        <li class="@(Html.IsMenuActive("/Administration/User") ? "active" : "")">
+            <a href="~/Administration/Users/Index">
+                <i class="fa fa-user"></i>
+                <span> @Constants.MainPages.Users</span>
+            </a>
+        </li>
+        <li class="@(Html.IsMenuActive("/Administration/Requests") ? "active" : "")">
+            <a href="~/Administration/Requests/Index">
+                <i class="fa fa-exclamation-triangle"></i>
+                <span>@Constants.MainPages.Requests</span>
+             </a>
+        </li>
+    }
+
+</ul>

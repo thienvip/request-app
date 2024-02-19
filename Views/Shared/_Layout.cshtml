@@ -1,0 +1,187 @@
+﻿@using src.Core
+@using src.Web.Common
+@using Microsoft.Extensions.Options
+@using src.Web.Extensions
+@using System.Text.Encodings.Web
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>@ViewData["Title"]</title>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    @await Html.PartialAsync("_StylesScriptPartial")
+</head>
+<body class="hold-transition bg-green text-black layout-top-nav">
+    <div class="wrapper">
+        <header class="main-header">
+            <nav class="navbar navbar-static-top">
+                <div class="container">
+                    <div class="nav navbar-header">
+                        <a asp-action="Index" asp-controller="Request" class="navbar-brand">
+                            <b>
+                                VAS - @SharedLocalizer["label_brand"]
+                            </b>
+                        </a>
+                    </div>
+                    <div class="navbar-custom-menu">
+                        <ul class="nav navbar-nav">
+                            @await Html.PartialAsync("_LoginPartial")
+                            <li style="margin-right: 5px;padding-top: 5px;">
+                                <h6>
+                                    <a href="~/Account/SetLanguage?culture=vi-VN&returnUrl=@(UrlEncoder.Default.Encode(Context.Request.Path + Context.Request.QueryString))">
+                                        <span class="label label-default"><span class="flag-icon flag-icon-vn"></span> VN</span>
+                                    </a>
+                                </h6>
+                            </li>
+                            <li style="margin-right: 5px;padding-top: 5px;">
+                                <h6>
+                                    <a href="~/Account/SetLanguage?culture=en-GB&returnUrl=@(UrlEncoder.Default.Encode(Context.Request.Path + Context.Request.QueryString))">
+                                        <span class="label label-default"><span class="flag-icon flag-icon-gb"></span> ENG</span>
+                                    </a>
+                                </h6>
+
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </nav>
+        </header>
+
+        <div class="content-wrapper" style="min-height: 531px;">
+            <div class="container">
+                <section class="content">
+                    @RenderBody()
+                </section>
+            </div>
+        </div>
+
+        <footer class="main-footer">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h4>
+                        BA THANG HAI CAMPUS
+                    </h4>
+                    <span><i class="fa fa-fw fa-home"></i> 594 Ba Tháng Hai, Phường 14, Quận 10</span><br />
+                    <a class="text-blue" href="tel:(028) 3864 1770">
+                        <span>
+                            <i class="fa fa-fw fa-phone"></i> (028) 3864
+                            1770
+                        </span>
+                    </a><br />
+                    <a class="text-blue" href="mailto:info.bth@vas.edu.vn">
+                        <span>
+                            <i class="fa fa-fw fa-inbox"></i>
+                            info.bth@vas.edu.vn
+                        </span>
+                    </a>
+                </div>
+                <div class="col-lg-4">
+                    <h4>
+                        RIVERSIDE CAMPUS
+                    </h4>
+                    <span><i class="fa fa-fw fa-home"></i> 99 Nguyễn Thị Thập, Phường Tân Phú, Quận 7</span><br />
+                    <a class="text-blue" href="tel:(028) 3622 0898">
+                        <span>
+                            <i class="fa fa-fw fa-phone"></i> (028) 3622
+                            0898
+                        </span>
+                    </a><br />
+                    <a class="text-blue" href="mailto:info.rs@vas.edu.vn">
+                        <span>
+                            <i class="fa fa-fw fa-inbox"></i>
+                            info.rs@vas.edu.vn
+                        </span>
+                    </a>
+                </div>
+                <div class="col-lg-4">
+                    <h4>
+                        SUNRISE CAMPUS
+                    </h4>
+                    <span><i class="fa fa-fw fa-home"></i> Số 1, Đường số 20, Khu Him Lam, Quận 7</span><br />
+                    <a class="text-blue" href="tel:02836226611">
+                        <span>
+                            <i class="fa fa-fw fa-phone"></i> (028) 3622
+                            6611
+                        </span>
+                    </a><br />
+                    <a class="text-blue" href="mailto:info.sur@vas.edu.vn">
+                        <span>
+                            <i class="fa fa-fw fa-inbox"></i>
+                            info.sur@vas.edu.vn
+                        </span>
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <h4>
+                        HOANG VAN THU CAMPUS
+                    </h4>
+                    <span><i class="fa fa-fw fa-home"></i> 202 Hoàng Văn Thụ, Quận Phú Nhuận</span><br />
+                    <a class="text-blue" href="tel:(028) 3999 0112">
+                        <span>
+                            <i class="fa fa-fw fa-phone"></i> (028) 3999
+                            0112
+                        </span>
+                    </a><br />
+                    <a class="text-blue" href="mailto:info.hvt@vas.edu.vn">
+                        <span>
+                            <i class="fa fa-fw fa-inbox"></i>
+                            info.hvt@vas.edu.vn
+                        </span>
+                    </a>
+                </div>
+                <div class="col-lg-4">
+                    <h4>
+                        GARDEN HILL CAMPUS
+                    </h4>
+                    <span><i class="fa fa-fw fa-home"></i> 168 Phan Văn Trị, Quận Gò Vấp</span><br />
+                    <a class="text-blue" href="tel:(028) 3588 3088">
+                        <span>
+                            <i class="fa fa-fw fa-phone"></i> (028) 3588
+                            3088
+                        </span>
+                    </a><br />
+                    <a class="text-blue" href="mailto:info.gh@vas.edu.vn">
+                        <span>
+                            <i class="fa fa-fw fa-inbox"></i>
+                            info.gh@vas.edu.vn
+                        </span>
+                    </a>
+                </div>
+                <div class="col-lg-4">
+                    <h4>
+                        SALA CAMPUS
+                    </h4>
+                    <span><i class="fa fa-fw fa-home"></i> 10 Mai Chí Thọ, KĐT Thủ Thiêm, Quận 2</span><br />
+                    <a class="text-blue" href="tel:(028) 3622 0833">
+                        <span>
+                            <i class="fa fa-fw fa-phone"></i> (028) 3622
+                            0833
+                        </span>
+                    </a><br />
+                    <a class="text-blue" href="mailto:info.sl@vas.edu.vn">
+                        <span>
+                            <i class="fa fa-fw fa-inbox"></i>
+                            info.sl@vas.edu.vn
+                        </span>
+                    </a>
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <strong>VIETNAM AUSTRALIA INTERNATIONAL SCHOOL</strong>
+            </div>
+            <!-- /.container -->
+        </footer>
+
+    </div>
+    @await Html.PartialAsync("_Alert")
+</body>
+</html>
+
+

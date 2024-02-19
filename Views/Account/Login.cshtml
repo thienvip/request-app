@@ -1,0 +1,79 @@
+﻿@using src.Core
+@using src.Web.Common.Models.ParentViewModels
+@using Microsoft.Extensions.Options
+@inject IOptions<AppSettings> AppSettings
+@{
+    ViewBag.Title = Constants.MainPages.Login;
+
+}
+@model src.Web.Common.Models.AccountViewModels.LoginViewModel
+
+<div class="box box-solid">
+    <div class="box-body ">
+        <div class="form-group">
+            <h5 class="text-center text-bold text-green" style="line-height: 1.5; font-size: 14px;">
+                    @SharedLocalizer["label_welcome_message"]          
+            </h5>
+            <div class="col-lg-12">
+                <P>
+                    - @SharedLocalizer["label_required_input_for_login"]
+                </P>
+                <p>
+                    - @SharedLocalizer["label_forgot_registered_information"]
+                </p>
+            </div>
+        </div>
+
+        <form id="frmSubmit" asp-controller="Account" asp-action="Login" class="login-box"
+              asp-route-returnurl="@ViewData["returnUrl"]" method="post" role="form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                    <label asp-for="UserName" class="control-label text-center"></label>
+                    <input asp-for="UserName" class="form-control" />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label text-center"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <button type="submit" style="margin-top: 10px;" class="btn btn-success btn-flat btn-block">@SharedLocalizer["SignIn_button"]</button>
+            </div>
+        </form>     
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+     
+        
+        $("#@Html.IdFor(model => model.UserName)").focus();
+
+        $("#frmSubmit").validate({
+            errorElement: 'span',
+            errorElementClass: 'input-validation-error',
+            errorClass: 'field-validation-error',
+            rules: {
+                UserName:
+                {
+                    required: true,
+                },
+                Password:
+                {
+                    required: true,
+                },
+            },
+            messages: {
+                UserName: {
+                    required: "@SharedLocalizer["EnterUsername"]"
+                },
+                Password: {
+                    required: "@SharedLocalizer["EnterPassword"]"
+                }
+            },
+            submitHandler: function (form) {
+                form.submit();
+            }
+        });
+    });
+</script>

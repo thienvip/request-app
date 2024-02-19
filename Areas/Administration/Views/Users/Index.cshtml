@@ -1,0 +1,187 @@
+﻿@using src.Core
+@model src.Web.Common.Models.UserViewModels.UserViewModel
+@{
+    ViewBag.Title = Constants.MainPages.Users;
+}
+<div class="content-header clearfix">
+    <h1 class="pull-left">
+        <i class="fa fa-user-circle" aria-hidden="true"></i> @ViewBag.Title
+    </h1>
+    <div class="pull-right">
+        <a class="btn btn-success" onclick="ShowPopup('@Url.Action("AddOrEdit","Users")')">
+            <i class="fa fa-plus" aria-hidden="true"></i> Add New
+        </a>
+    </div>
+</div>
+<div class="content">
+    <div class="box box-info">
+        <!-- /.box-header -->
+        <!-- form start -->
+        <form class="form-horizontal">
+            <div class="box-body">
+                <table id="grid" name="grid" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="col-md-2">User Name</th>
+                            <th class="col-md-2">First Name</th>
+                            <th class="col-md-2">Last Name</th>
+                            <th class="col-md-2">Status</th>
+                            <th class="col-md-1">Role</th>
+                            <th class="col-md-2">Last Login Date</th>
+                            <th class="col-md-1"></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </form>
+    </div>
+    <div class="modal modal-danger fade" id="modalDefault">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var popup, dataTable;
+    var entity = 'Users';
+    var apiurl = '/api/' + entity;
+    $(document).ready(function () {
+        dataTable = $('#grid').DataTable({
+            "ajax": {
+                "url": '@Url.Action("GetUsers", "Users")', 
+                "type": 'GET',
+                "datatype": 'json',
+                error: function (req, err) {
+                    alert('failure');
+                    HideLoadingMessage();
+                }
+            },
+            "columns": [
+                { "data": "UserName" },
+                { "data": "FirstName" },
+                { "data": "LastName" },
+                {
+                    "data": "IsActive",
+                    "render": function (data) {
+                        return data ? '<span class="label label-success">Active</span>' : '<span class="label label-danger">Active</span>';
+                    },
+                },
+                { "data": "AuthorizedRoleNames" },
+                {
+                    "data": "LastLoginDate" ,
+                    "render": function (data) {
+                        if (data) { 
+                            var date = new Date(data); 
+                            if (!isNaN(date.getTime())) {
+                                // Format the date to hh:ss dd/mm/yyyy
+                                var hours = date.getHours().toString().padStart(2, '0');
+                                var minutes = date.getMinutes().toString().padStart(2, '0');
+                                var seconds = date.getSeconds().toString().padStart(2, '0');
+                                var day = date.getDate().toString().padStart(2, '0');
+                                var month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                var year = date.getFullYear();
+                                return hours + ':' + minutes + ' ' + day + '/' + month + '/' + year;
+                            }
+                        }
+                        return;
+                    }
+                },
+                {
+                    "data": "Id",
+                    "render": function (data) {
+                        var btnEdit = "<a class='btn btn-default btn-xs' onclick=ShowPopup('/Administration/" + entity + "/AddOrEdit/" + data + "')><i class='fa fa-pencil'></i></a>";
+                        var btnDelete = "<a class='btn btn-danger btn-xs' style='margin-left:5px' onclick=Delete('" + data + "')><i class='fa fa-trash'></i></a>";
+                        return btnEdit + btnDelete;
+                    }
+                }
+
+
+            ],
+            "columnDefs": [ 
+                {
+                    targets: [3],                 
+                    "className": "text-center",
+                   
+                },
+                {
+                    targets: [6],
+                    "className": "text-center",
+                }
+            ],
+            "paging": true, // Enable pagination
+            "info": false,
+            "pageLength": 10, // Number of records per page
+            "lengthChange": false,
+            "scrollX": 'auto',
+            order: [0, 'asc'],
+        });
+    });
+
+
+    function ShowPopup(url) {
+        var modalId = 'modalDefault';
+        var modalPlaceholder = $('#' + modalId + ' .modal-dialog .modal-content');
+        $.get(url)
+            .done(function (response) {
+                modalPlaceholder.html(response);
+              
+                popup = $('#' + modalId + '').modal({
+                    keyboard: false,
+                    backdrop: 'static'
+                });
+            });
+    }
+
+
+    function Delete(id) {
+
+        swal(
+            {
+                title: "@SharedLocalizer["label_alert"]",
+                text: "@SharedLocalizer["notification_delete"]",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-warning",
+                confirmButtonText: "@SharedLocalizer["btn_accept"]",
+                cancelButtonText: "@SharedLocalizer["btn_no"]",
+                closeOnConfirm: true,
+                closeOnCancel: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    IsDelete(id);
+                }
+
+            }
+        );
+    }
+
+    function IsDelete(id) {
+        $.ajax({
+            url: '@Url.Action("Delete", "Users")',
+            type:'POST',
+            data: {
+                "id": id
+            },
+            success: function (data, textStatus, XMLHttpRequest) {
+                if (data.success) {
+                    ShowMessage(data.message);
+                } else {
+                    ShowMessageError(data.message);
+                }
+                window.location.reload();
+            },
+            error: function (data, textStatus, XMLHttpRequest) {
+                ShowMessageError(data.message);
+                window.location.reload();
+            },
+
+        })
+    }
+
+
+    
+</script>
+

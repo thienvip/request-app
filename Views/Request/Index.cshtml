@@ -1,0 +1,372 @@
+﻿@using src.Core
+@using src.Web.Common.Models.RequestModels
+
+@model RequestViewModel
+
+@{
+    ViewBag.Title = Constants.MainPages.Requests;
+}
+
+<style>
+    .hidden {
+        display: none;
+        
+    }
+
+    #holder {
+        background-color: white;
+        border: 1px solid #ccc;
+        margin-left:8px;
+        margin-right:8px;
+    }
+
+    textarea {
+        border: none !important;
+        resize:none;
+    }
+
+    textarea:focus {
+        outline: none;
+    }
+
+    #ui-id-1{
+        list-style:none;
+        position:absolute!important;
+        border: 1px solid #ccc;    
+        background:white;
+        padding:3px 10px ;
+        cursor:pointer;
+        max-height:20%;
+        overflow-y:hidden;
+        overflow-y:scroll      
+    }
+
+    .ui-tooltip{
+        display:hidden !important;
+        opacity: 0;
+    }
+    
+</style>
+
+@if(Model != null)
+{
+<form id="frmHandBookConfirm" asp-controller="Request" asp-action="Submit" class="form-horizontal" method="post"
+          role="form" enctype="multipart/form-data">
+    <div class="box box-solid">
+        <div class="box-body">
+            <h3 class="text-center text-blue">
+                @SharedLocalizer["label_request"]<br>
+            </h3>
+            <div class="box box-primary box-solid" style="padding-bottom: 10px;">
+                <div class="box-header">
+                    @SharedLocalizer["label_employee_info"]
+                </div>
+                <div class="box-body" style="padding-left: 20px">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">@SharedLocalizer["UserName"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-10">
+                            <input type="text" asp-for="@Model.User.UserName" value="@Model.User.UserName" class="form-control"  readonly >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">@SharedLocalizer["label_parents_name"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" asp-for="@Model.User.FirstName" value="@Model.User.LastName @Model.User.FirstName" maxlength="50" readonly >
+                        </div>
+                    </div>              
+                </div>
+            </div>
+            <div class="box box-success box-solid">
+                <div class="box-header">
+                    <h5 class="box-title">
+                        VAS - @SharedLocalizer["label_brand"]
+                    </h5>
+                </div>
+
+                <div class="box-body ">
+                    <p class="well well-sm bg-blue text-bold" style="margin-top: 10px;">
+                        @SharedLocalizer["label_general_info"]
+                    </p>
+                    <div>
+                        <div style="display:flex; align-items:center; justify-content:space-between">
+                            <p style="padding-top: 5px;" class="text-yellow">
+                                @SharedLocalizer["label_ask_change"]
+                            </p>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 " style="margin:auto">
+                                <div class="box-body">
+                                    <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_system"]: <span class="field-required">*</span></label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control select2 " asp-for="@Model.ChangeRequest.ApplicationId" style="width: 100%;" id="options" onchange="handleOptionChange()">
+                                                @foreach (var app in Model.ListApplications)
+                                                {
+                                                    <option value="@app.Id">@app.Name</option>
+                                                }
+                                            <option value="">Others</option>
+                                        </select>
+                                        <input type="text" asp-for="@Model.ChangeRequest.ApplicationOtherName" id="replacementInput" class="hidden form-control " style="width: 100%; margin-top:-18px" placeholder="Enter text" onblur="handleInputBlur()">
+                                        <span asp-validation-for="@Model.ChangeRequest.ApplicationOtherName" class="text-danger"></span>
+                                     </div>
+                                </div>
+                            </div>
+                           
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6 " style="margin:auto">
+                                <div class="box-body">
+                                    <label class="control-label col-sm-4" style="text-align:left;">@SharedLocalizer["label_requester"]: <span class="field-required">*</span></label>
+                                    <div class="col-sm-8">
+                                        <input type="text" asp-for="@Model.ChangeRequest.Requester" value="@($"{Model.User.LastName} {Model.User.FirstName}")"  class="form-control" maxlength="100" required style="margin-left:7px">
+                                        <span asp-validation-for="@Model.ChangeRequest.Requester" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 " style="margin:auto">
+                                <div class="box-body">
+                                    <label class="control-label col-sm-4" style="text-align:left;">@SharedLocalizer["label_department"]: <span class="field-required">*</span></label>
+                                    <div class="col-sm-8">  
+                                        <input asp-for="@Model.ChangeRequest.Campus" type="text" class="form-control" maxlength="100" required>
+                                        <span asp-validation-for="@Model.ChangeRequest.Campus" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 " style=" margin:auto">
+                                <div class="box-body">
+                                    <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_change_type"]: <span class="field-required">*</span></label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control select2 " asp-for="@Model.ChangeRequest.ChangeRequestTypeId" style="width: 100%;" id="optionsType" onchange="handleOptionChangeType()">
+                                            <option value="RC" selected="selected">@SharedLocalizer["label_opt_change_type_1"]</option>
+                                            <option value="NR">@SharedLocalizer["label_opt_change_type_2"]</option>
+                                            <option value="CD">@SharedLocalizer["label_opt_change_type_3"]</option>
+                                            <option value="">@SharedLocalizer["label_opt_change_type_4"]</option>
+                                        </select>
+                                        <input type="text" asp-for="@Model.ChangeRequest.ChangeRequestOtherName" id="replacementInputType" class="hidden form-control " style="width: 100%; margin-top:-18px" placeholder="Enter text" onblur="handleInputTypeBlur()">
+                                        <span asp-validation-for="@Model.ChangeRequest.ChangeRequestOtherName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12" style=" margin:auto">                  
+                                <div class="box-body">
+                                    <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_priority"]: <span class="field-required">*</span></label>
+                                    <div class="col-sm-10">
+                                            <select class="form-control select2 " asp-for="@Model.ChangeRequest.PriorityId" style="width: 100%;" id="optionsPriority" >
+                                            <option value="EM" selected="selected">@SharedLocalizer["label_opt_priority_1"]</option>
+                                            <option value="RO">@SharedLocalizer["label_opt_priority_2"]</option>
+                                            <option value="UR">@SharedLocalizer["label_opt_priority_3"]</option>                                          
+                                        </select>                                     
+                                    </div>
+                                </div>                                                  
+                            </div>
+                        </div>
+                        <div class="row">                          
+                            <div class="col-sm-12 " style="margin:auto">
+                                <div class="box-body">
+                                    <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_expected_date"]:</label>
+                                    <div class="col-sm-10">
+                                        <input asp-for="@Model.ChangeRequest.PriorityExpectedDate" type="date" class="form-control" maxlength="100" >                                       
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                       
+                    </div>
+                    <br/>
+                    <p class="well well-sm bg-blue text-bold" style="margin-top: 10px;">
+                        @SharedLocalizer["label_change_des"]
+                    </p>
+                    <div>
+                        <div style="display:flex; align-items:center; justify-content:space-between">
+                            <label>
+                                @SharedLocalizer["label_change_content"]:
+                            </label>
+                        </div>                    
+                        <fieldset id='holder' >
+                                <textarea rows="8" maxlength="250" class="form-control" asp-for="@Model.ChangeRequest.CurrentFeature" placeholder="Enter current feature ..."></textarea>
+                                <span asp-validation-for="@Model.ChangeRequest.CurrentFeature" class="text-danger" style="padding-left:10px"></span>
+                                <textarea rows="8" maxlength="250" class="form-control" asp-for="@Model.ChangeRequest.FeatureRequiringModification" placeholder="Enter feature requiring modification ..."></textarea>
+                                <span asp-validation-for="@Model.ChangeRequest.FeatureRequiringModification" class="text-danger" style="padding-left:10px"></span>
+                        </fieldset>                       
+                    </div>
+                    <div class="row">
+                        <div class="box-body">
+                            <div class="col-md-12">
+                                <div class="box collapsed-box">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title" style="font-size:13px; font-weight:bold">Attachments</h3>
+                                        <div class="box-tools pull-right">
+                                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="box-body">
+                                        <div class="row">
+                                            <div class="col-md-12" style="margin:auto">
+                                                <div class="box-body">
+                                                        <div class="pull-right">
+                                                            <input id="files" name="files" type="file" class="file" multiple accept=".png, .jpg, .jpeg"
+                                                                   data-show-upload="false" data-msg-placeholder="Select {files} for upload...">
+                                                        </div>
+                                                        <br>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="well well-sm bg-blue text-bold" style="margin-top: 10px;">
+                        @SharedLocalizer["label_confirm_req"]
+                    </p>
+                    <div class="row">
+                        <div class="col-sm-12 " style="margin:auto">
+                            <div class="box-body">
+                                <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_by_sup"]: <span class="field-required">*</span></label>
+                                <div class="col-sm-10">                                    
+                                        <input type="text" class="form-control" asp-for="@Model.ChangeRequest.Users.UserName" autocomplete=" off" style="width: 100%; position:relative" id="auto_check" placeholder="Enter a username" required/>
+                                        <span asp-validation-for="@Model.ChangeRequest.Users.UserName" class="text-danger" style="padding-left:10px"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  @*   <div class="form-group">
+                        <div class="col-sm-12">
+                            @if (Model.ChangeRequest != null)                           
+                            {
+                                await Html.RenderPartialAsync("_ChangeRequestHistory", Model.ListChangeRequests);
+                            }                            
+                        </div>
+                    </div> *@
+                </div>
+            </div>
+            <hr />
+            <div id="btn_confirm_area">
+                <div class="col-md-12 text-center">
+                    <button type="submit" id="Process" class="btn btn-success btnClickedEvent">
+                        <i class="fa fa-arrow-circle-o-right"></i>
+                             @SharedLocalizer["btn_accept"]
+                    </button>
+                    <a class="btn btn-default" id="cancel">
+                        <i class="fa fa-times-circle"></i> @SharedLocalizer["btn_cancel"]
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+}
+
+<script>
+   
+    $(document).ready(function () {
+       
+        $('.select2').select2();
+
+        var supportedUsernames = @Html.Raw(Json.Serialize(Model?.ListUsers?.Select(user => user.UserName)));
+       
+        $("#auto_check").autocomplete({
+            source: supportedUsernames
+        });
+
+        //iCheck for checkbox and radio inputs
+        $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+            checkboxClass: 'icheckbox_minimal-blue',
+            radioClass: 'iradio_minimal-blue'
+        });
+        // Show/hide input based on radio button selection
+        $('input[type="radio"]').on('ifChecked', function () {
+            var radioId = $(this).attr('id');
+            if (radioId === 'dateRadio') {
+                $('#dateInput').show();
+            } else {
+                $('#dateInput').hide();
+            }
+        });  
+    });
+
+
+    function handleOptionChange() {
+        var selectElement = $('#options');
+        var inputElement = $('#replacementInput');
+
+        if (selectElement.val() === '') {
+            // If the "Replace with Input" option is selected, hide the select element
+            selectElement.next().find('.select2-selection').addClass('hidden');
+            // Show the input element
+            inputElement.removeClass('hidden');
+        } else {
+            // If any other option is selected, hide the input element
+            inputElement.addClass('hidden');
+            // Show the select element
+            selectElement.next().find('.select2-selection').removeClass('hidden');
+        }
+    }
+
+    function handleInputBlur() {
+        var inputElement = $('#replacementInput');
+        var selectElement = $('#options');
+        // Check if the input is empty
+        if (inputElement.val() === '') {
+            // If the input is empty, hide the input element
+            inputElement.addClass('hidden');
+            // Show the select element
+            $('#options').next().find('.select2-selection').removeClass('hidden');
+            // Reset the select element to its first option
+            selectElement.find('option:first').prop('selected', true).trigger('change');
+        }
+    }
+
+
+    function handleOptionChangeType() {
+        var selectElement = $('#optionsType');
+        var inputElement = $('#replacementInputType');
+
+        if (selectElement.val() === '') {
+            // If the "Replace with Input" option is selected, hide the select element
+            selectElement.next().find('.select2-selection').addClass('hidden');
+            // Show the input element
+            inputElement.removeClass('hidden');
+        } else {
+            // If any other option is selected, hide the input element
+            inputElement.addClass('hidden');
+            // Show the select element
+            selectElement.next().find('.select2-selection').removeClass('hidden');
+        }
+    }
+
+    function handleInputTypeBlur() {
+        var inputElement = $('#replacementInputType');
+        var selectElement = $('#optionsType');
+        // Check if the input is empty
+        if (inputElement.val() === '') {
+            // If the input is empty, hide the input element
+            inputElement.addClass('hidden');
+            // Show the select element
+            $('#options').next().find('.select2-selection').removeClass('hidden');
+            // Reset the select element to its first option
+            selectElement.find('option:first').prop('selected', true).trigger('change');
+        }
+    }
+
+    
+    function handleInputPriorityBlur() {
+        var inputElement = $('#replacementInputPriority');
+        var selectElement = $('#optionsPriority');
+        // Check if the input is empty
+        if (inputElement.val() === '') {
+            // If the input is empty, hide the input element
+            inputElement.addClass('hidden');
+            // Show the select element
+            $('#options').next().find('.select2-selection').removeClass('hidden');
+            // Reset the select element to its first option
+            selectElement.find('option:first').prop('selected', true).trigger('change');
+        }
+    }
+
+</script>

@@ -1,0 +1,102 @@
+﻿ @using MealApplication.Areas.Administration.Controllers;
+@using src.Core
+@using src.Web.Common
+@using System.Text.Encodings.Web
+@inject IUserSession UserSession
+@{
+    var isDashboard = true;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>@ViewData["Title"]</title>
+   @await Html.PartialAsync("_StyleScriptPartial") 
+</head>
+    <body class="fixed skin-red sidebar-mini">
+    <div class="modal fade in" id="mod-progress" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div id="result" style="font-size: 1.1em; padding-bottom: 5px">
+                            <p id="progressBarParagraph"></p>
+                        </div>
+                        <div style="width: 30%; margin: 0 auto; display:none;">
+                            <div id="progressbar" style="width: 300px; height: 15px"></div>
+                            <br />
+                        </div>
+                        <div id="ProgressStripe" class="progress progress-striped active" style="position:relative; top:10px; width:100%;">
+                            <div id="ProgressMessage" class="progress-bar progress-bar-info" style="width: 100%; border:none;"></div>
+                        </div>
+                        <br />
+                    </div>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    <div class="alert-container"></div>
+    <div class="wrapper">
+        <header class="main-header">
+            <a href="@Url.Action(nameof(DashboardController.Index), "Dashboard", new {area = Constants.Areas.Administration})" class="logo">
+                <span class="logo-mini">VAS</span>
+                <span class="logo-lg" style="font-size:13px;">Trường Quốc tế Việt Úc <strong>(VAS)</strong></span>
+            </a>
+            <nav class="navbar navbar-static-top">
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <li style="margin-right: 5px;padding-top: 5px;">
+                            <h6>
+                                <a href="~/Account/SetLanguage?culture=vi-VN&returnUrl=@(UrlEncoder.Default.Encode(Context.Request.Path + Context.Request.QueryString))">
+                                    <span class="label label-default"><span class="flag-icon flag-icon-vn"></span> VN</span>
+                                </a>
+                            </h6>
+                        </li>
+                        <li style="margin-right: 5px;padding-top: 5px;">
+                            <h6>
+                                <a href="~/Account/SetLanguage?culture=en-GB&returnUrl=@(UrlEncoder.Default.Encode(Context.Request.Path + Context.Request.QueryString))">
+                                    <span class="label label-default"><span class="flag-icon flag-icon-gb"></span> ENG</span>
+                                </a>
+                            </h6>
+
+                        </li>
+                      
+                        @await Html.PartialAsync("_LoginPartial")
+                        
+                    </ul>
+                </div>             
+            </nav>
+        </header>
+        @if (User.Identity.IsAuthenticated && UserSession.IsInRole(Constants.RoleNames.Administrator) || UserSession.IsInRole(Constants.RoleNames.Supporter) || UserSession.IsInRole(Constants.RoleNames.BO) || UserSession.IsInRole(Constants.RoleNames.IT))
+        {
+            <aside class="main-sidebar">
+                <section class="sidebar">
+                    @await Html.PartialAsync("_MenuPartial")
+                </section>
+            </aside>
+        }
+
+        <div class="content-wrapper">
+            @RenderBody()
+        </div>
+        <div class="control-sidebar-bg"></div>
+    </div>
+
+    @RenderSection("Scripts", required: false)
+    @await Html.PartialAsync("_Alerts")
+    @* @await Html.PartialAsync("_SessionExpireNotification") *@
+
+
+  
+
+</body>
+</html>

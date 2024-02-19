@@ -1,0 +1,23 @@
+﻿@using System.Web
+@using Microsoft.AspNetCore
+@using src.Web.Common.Mvc.Alerts
+@{
+    var alerts = TempData.GetAlerts();
+    
+    if (alerts.Any())
+    {
+        <script type="text/javascript">
+            $(function () {
+            @foreach (var alert in alerts)
+            {
+                <text>
+                        window.alerts.showAlert({
+                            message: '@(Html.Raw(alert.Message.Replace("'", "\\'")))',
+                            alertClass: '@alert.AlertClass'
+                        });
+                </text>
+            }
+                        });
+        </script>
+    }
+}

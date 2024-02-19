@@ -1,0 +1,577 @@
+﻿@using System.Web;
+@using src.Core
+@using src.Core.Domains;
+@using src.Web.Common.Models.RequestModels
+@using src.Web.Common
+@inject IUserSession UserSession
+@model ListRequestViewModel
+@{
+    var attachments = Model.ChangeRequestDetail.ChangeRequestAttachment;
+    var initialPreview = attachments?.Select(attachment => attachment.FilePath);
+
+}
+<style>
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 100%;
+        border: 1px solid #ddd;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    .modal-body {
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    .comments-list .comment-box {
+        width: 100%;
+        position: relative;
+    }
+
+    .comments-list .comment-box:before, .comments-list .comment-box:after {
+        content: '';
+        height: 0;
+        width: 0;
+        position: absolute;
+        display: block;
+        border-width: 10px 12px 10px 0;
+        border-style: solid;
+        border-color: transparent #E5E5E5;
+        top: 8px;
+        left: -11px;
+    }
+
+    .comments-list .comment-box:before {
+        border-width: 11px 13px 11px 0;
+        border-color: transparent rgba(0,0,0,0.05);
+        left: -12px;
+    }
+
+    .reply-list .comment-box {
+        width: 610px;
+    }
+
+    .comment-box .comment-head {
+        background: #E5E5E5;
+        padding: 10px 12px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 4px;
+    }
+
+    /* TextArena */
+    #holder {
+        background-color: white;
+        border: 1px solid #ccc;
+        margin-left: 8px;
+        margin-right: 8px;
+    }
+
+    textarea {
+        border: none !important;
+        resize: none;
+    }
+
+    textarea:focus {
+        outline: none;
+    }
+
+    /** =====================
+         * Responsive
+         ========================*/
+    @@media only screen and (max-width: 766px) {
+        .comments-container {
+            width: 480px;
+        }
+
+        .comments-list .comment-box {
+            width: 390px;
+        }
+
+        .reply-list .comment-box {
+            width: 320px;
+        }
+    }
+
+
+</style>
+<div class="content">
+    <form id="myForm" class="box box-solid" style="margin-top:20px" method="post" asp-controller="Requests" asp-action="SubmitModal">
+    <div class="modal-header">    
+        <div class="modal-title" style="display:flex; align-items:end">
+            <h4 style="font-weight:600">@SharedLocalizer["label_history_request"] </h4>
+        </div>
+    </div>
+    <div class="box-body  text-nowrap" style="margin-bottom:10px; margin-right:20px;">
+        <p class="well well-sm bg-blue text-bold" style="margin-top: 10px;">
+            @SharedLocalizer["label_general_info"]
+        </p>
+        <section>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+                <p style="padding-top: 5px;" class="text-yellow">
+                    @SharedLocalizer["label_ask_change"]
+                </p>
+            </div>
+            <input type="hidden" name="deny" id="deny" value="false">
+            <input type="hidden" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.Id" />
+            <input type="hidden" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.State" />
+            <input type="hidden" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.User" />
+            <div class="row">
+                <div class="col-sm-12 " style=" margin:auto">
+                    <div class="box-body">
+                        <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_system"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-10">
+                            @if (string.IsNullOrWhiteSpace(Model?.ChangeRequestDetail?.ApplicationOtherName))
+                            {
+                                    <input asp-for="@Model.ChangeRequestDetail.Applications.Name" class="form-control" style="width: 100%;" placeholder="Enter text" disabled />
+                            }
+                            else
+                            {
+                                    <input type="text" asp-for="@Model.ChangeRequestDetail.ApplicationOtherName" id="replacementInput" class="form-control" style="width: 100%;" placeholder="Enter text" disabled>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-sm-6 " style="margin:auto">
+                    <div class="box-body">
+                        <label class="control-label col-sm-4" style="text-align:left;">@SharedLocalizer["label_requester"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-8">
+                                <input type="text" asp-for="@Model.ChangeRequestDetail.Requester" class="form-control" maxlength="100" required style="margin-left:7px" disabled>                              
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 " style="margin:auto">
+                    <div class="box-body">
+                        <label class="control-label col-sm-4" style="text-align:left;">@SharedLocalizer["label_department"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-8">
+                                <input asp-for="@Model.ChangeRequestDetail.Campus" type="text" class="form-control" maxlength="100" required disabled>
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 " style=" margin:auto">
+                    <div class="box-body">
+                        <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_change_type"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-10">
+                                @if (string.IsNullOrWhiteSpace(Model?.ChangeRequestDetail?.ChangeRequestOtherName))
+                            {
+                                    <select class="form-control select2 " asp-for="@Model.ChangeRequestDetail.ChangeRequestTypeId" style="width: 100%;" id="optionsType" disabled>
+                                    <option value="RC" selected="selected">@SharedLocalizer["label_opt_change_type_1"]</option>
+                                    <option value="NR">@SharedLocalizer["label_opt_change_type_2"]</option>
+                                    <option value="CD">@SharedLocalizer["label_opt_change_type_3"]</option>
+                                    <option value="">@SharedLocalizer["label_opt_change_type_4"]</option>
+                                </select>
+                            }
+                            else
+                            {
+                                    <input type="text" asp-for="@Model.ChangeRequestDetail.ChangeRequestOtherName" id="replacementInputType" class="form-control " style="width: 100%; " placeholder="Enter text" disabled>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12" style=" margin:auto">
+                    <div class="box-body">
+                        <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_priority"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-10"> 
+                                <select class="form-control select2 " asp-for="@Model.ChangeRequestDetail.PriorityId" style="width: 100%;" id="optionsPriority"  disabled>
+                                    <option value="EM" selected="selected">@SharedLocalizer["label_opt_priority_1"]</option>
+                                    <option value="RO">@SharedLocalizer["label_opt_priority_2"]</option>
+                                    <option value="UR">@SharedLocalizer["label_opt_priority_3"]</option>
+                                    <option value="">@SharedLocalizer["label_opt_priority_4"]</option>
+                                </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (@Model?.ChangeRequestDetail.PriorityExpectedDate != null)
+            {
+                <div class="row">
+                    <div class="col-sm-12 " style="margin:auto">
+                        <div class="box-body">
+                            <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_expected_date"]:</label>
+                            <div class="col-sm-10">
+                                    <input asp-for="@Model.ChangeRequestDetail.PriorityExpectedDate" type="date" class="form-control" maxlength="100" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            }
+
+
+        </section>
+        <br />
+        <p class="well well-sm bg-blue text-bold">
+            @SharedLocalizer["label_change_des"]
+        </p>
+        <div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+                <label>
+                    @SharedLocalizer["label_change_content"]:
+                </label>
+            </div>
+            <fieldset id='holder'>
+                <textarea rows="8" maxlength="250" disabled class="form-control" id="currentFeature" placeholder="Enter current feature ..."></textarea>
+                <textarea rows="8" maxlength="250" disabled class="form-control" id="featureRequiringModification" placeholder="Enter feature requiring modification ..."></textarea>
+            </fieldset>
+        </div>
+        @if (Model.ChangeRequestDetail.ChangeRequestAttachment.Count() > 0)
+        {
+            <div class="row">
+                <div class="box-body">
+                    <div class="col-md-12">
+                        <div class="box">
+                            <div class="box-header with-border">
+                                <h3 class="box-title" style="font-size:13px; font-weight:bold">Attachments</h3>                              
+                            </div>
+                            <div class="box-body">
+                                <div class="row">
+                                    <div class="col-md-12" style=" margin:auto">
+                                        <div class="box-body">
+                                            <div class="pull-right">
+                                                <input id="file-fr" name="file-fr[]" type="file" multiple disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <p class="well well-sm bg-blue text-bold" style="margin-top: 10px;">
+        @SharedLocalizer["label_confirm_req"]
+        </p>
+        @if (!UserSession.IsInRole(Constants.RoleNames.Administrator))
+        {
+            <div class="row">
+                <div class="col-sm-12 " style=" margin:auto">
+                    <div class="box-body">
+                        <label class="control-label col-sm-2" style="text-align:left;">@SharedLocalizer["label_by_sup"]: <span class="field-required">*</span></label>
+                        <div class="col-sm-10">
+                            <select class="form-control select2 " asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.NextStateUserInCharge" style="width: 100%;" id="options" onchange="handleOptionChange()">
+                                @foreach (var user in Model.ListUsers)
+                                {
+                                    <option value="@user.Id">@user.UserName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+       
+
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow?.State == "Submitted" && UserSession.IsInRole(Constants.RoleNames.Supporter) && string.IsNullOrEmpty(Model.ChangeRequestFlow?.Comment))
+        {
+          <section>
+            <div class="row">
+                <div class="box-body">
+                    <div class="col-sm-12 " style=" margin:auto">
+                        <label class="control-label text-blue" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của người hỗ trợ/ Supporter's comments </label>
+                    </div>                 
+                </div>
+            </div>
+            <div class="row">
+                <div class="box-body">
+                    <div class="col-sm-12">
+                        <div class="comments-list">
+                            <div class="comment-box">
+                                <div class="comment-head">
+                                    <div class="label label-success"> Supporter</div>
+                                     <input class="form-control" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.Comment" placeholder="Enter your comment..." maxlength="50" value="" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </section>
+        }
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow?.State == "Supported" && UserSession.IsInRole(Constants.RoleNames.BO))
+        {
+            <section>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12 " style=" margin:auto">
+                            <label class="control-label text-danger" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của cấp Chủ doanh nghiệp/Business Owner's comments </label>
+                        </div>                        
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12">
+                            <div class="comments-list">
+                                <div class="comment-box">
+                                    <div class="comment-head">
+                                            <div class="label label-success"> Business Owner</div>
+                                        <input class="form-control" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.Comment" placeholder="Enter your comment..." maxlength="50" value="" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow?.State == "Approved" && UserSession.IsInRole(Constants.RoleNames.IT))
+        {
+            <section>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12 " style=" margin:auto">
+                            <label class="control-label text-success" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của IT Dept/IT Dept's comments </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12">
+                            <div class="comments-list">
+                                <div class="comment-box">
+                                    <div class="comment-head">
+                                        <div class="label label-success"> IT Dept</div>
+                                        <input class="form-control" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.Comment" placeholder="Enter your comment..." maxlength="50" value="" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+            @if (Model.ChangeRequestDetail.ChangeRequestFlow?.State == "Assessed" && UserSession.IsInRole(Constants.RoleNames.Administrator))
+            {
+                <section>
+                    <div class="row">
+                        <div class="box-body">
+                            <div class="col-sm-12 " style=" margin:auto">
+                                <label class="control-label text-warning" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của IT Administrator/IT Administrator's comments </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="box-body">
+                            <div class="col-sm-12">
+                                <div class="comments-list">
+                                    <div class="comment-box">
+                                        <div class="comment-head">
+                                            <div class="label label-success"> IT Dept</div>
+                                            <input class="form-control" asp-for="@Model.ChangeRequestDetail.ChangeRequestFlow.Comment" placeholder="Enter your comment..." maxlength="50" value="" />
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            }
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow.Comments.Any(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 2))
+        {
+            <section>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12 " style=" margin:auto">
+                            <label class="control-label text-blue" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của người hỗ trợ/ Supporter's comments </label>
+                        </div>
+                        <div class="col-sm-12" style="display:flex; justify-content:space-between">
+                                <label class="control-label">@Model.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 2).FirstOrDefault()?.User.UserName</label>
+                                <div class="control-label Italic">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 2).FirstOrDefault()?.CreatedDate</div>
+                        </div>
+                        </div>
+                </div>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12">
+                            <div class="comments-list">
+                                <div class="comment-box">
+                                    <div class="comment-head">
+                                        <div class="label label-success"> Supported</div>
+                                            <div class="text-md">@Model?.ChangeRequestDetail.ChangeRequestFlow.Comments?.Where(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 2).FirstOrDefault()?.Comment</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow.Comments.Any(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 3))
+        {
+            <section>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12 " style=" margin:auto">
+                                <label class="control-label text-danger" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của cấp Chủ doanh nghiệp/Business Owner's comments </label>
+                        </div>
+                        <div class="col-sm-12" style="display:flex; justify-content:space-between">
+                                <label class="control-label">@Model.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 3).FirstOrDefault()?.User.UserName</label>
+                                <div class="control-label Italic">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model?.ChangeRequestDetail?.ChangeRequestFlow?.Id && x.ChangeRequestId == 3).FirstOrDefault()?.CreatedDate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12">
+                            <div class="comments-list">
+                                <div class="comment-box">
+                                    <div class="comment-head">
+                                        <div class="label label-success">Business Owner</div>
+                                            <div class="text-md">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model?.ChangeRequestDetail?.ChangeRequestFlow?.Id && x.ChangeRequestId == 3).FirstOrDefault()?.Comment</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow.Comments.Any(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 4))
+        {
+            <section>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12 " style=" margin:auto">
+                                <label class="control-label text-success" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của IT Dept/IT Dept's comments </label>
+                        </div>
+                        <div class="col-sm-12" style="display:flex; justify-content:space-between">
+                            <label class="control-label">@Model.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 4).FirstOrDefault()?.User.UserName</label>
+                            <div class="control-label Italic">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model?.ChangeRequestDetail?.ChangeRequestFlow?.Id && x.ChangeRequestId == 4).FirstOrDefault()?.CreatedDate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12">
+                            <div class="comments-list">
+                                <div class="comment-box">
+                                    <div class="comment-head">
+                                        <div class="label label-success">IT Dept</div>
+                                        <div class="text-md">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model?.ChangeRequestDetail?.ChangeRequestFlow?.Id && x.ChangeRequestId == 4).FirstOrDefault()?.Comment</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+        @if (Model.ChangeRequestDetail.ChangeRequestFlow.Comments.Any(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 5))
+        {
+            <section>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12 " style=" margin:auto">
+                                <label class="control-label text-warning" style="text-align:left;"><span> <i class="fa fa-comment-o"></i> </span>Ý kiến của IT Administrator/IT Administrator's comments </label>
+                        </div>
+                        <div class="col-sm-12" style="display:flex; justify-content:space-between">
+                            <label class="control-label">@Model.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model.ChangeRequestDetail.ChangeRequestFlow.Id && x.ChangeRequestId == 5).FirstOrDefault()?.User.UserName</label>
+                            <div class="control-label Italic">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model?.ChangeRequestDetail?.ChangeRequestFlow?.Id && x.ChangeRequestId == 5).FirstOrDefault()?.CreatedDate</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="box-body">
+                        <div class="col-sm-12">
+                            <div class="comments-list">
+                                <div class="comment-box">
+                                    <div class="comment-head">
+                                        <div class="label label-success">IT Administrator</div>
+                                        <div class="text-md">@Model?.ChangeRequestDetail?.ChangeRequestFlow?.Comments?.Where(x => x.ForeignId == Model?.ChangeRequestDetail?.ChangeRequestFlow?.Id && x.ChangeRequestId == 5).FirstOrDefault()?.Comment</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        }
+    </div>
+    <div class="modal-footer">
+            <button id="submit-button" type="submit" class="btn btn-primary "><i class="fa fa-save" disabled></i> Accept</button>
+            <button id="deny-button" type="button" class="btn btn-danger"><i class="fa fa-times" ></i> Refuse</button>
+    </div>
+</form>
+</div>
+
+<script>Ladda.bind('.btn', { timeout: 1000 });</script>
+<script type="text/javascript">
+    var initialPreviewArray = @Html.Raw(Json.Serialize(initialPreview ?? Enumerable.Empty<string>())); 
+    var additionalParameter = '@ViewData["AdditionalParameter"]';
+
+    // Add values to the textareas
+    var currentFeatureValue = "Current feature:" + ' @Model?.ChangeRequestDetail?.CurrentFeature';
+    var featureRequiringModificationValue = "Feature requiring modification:" + ' @Model?.ChangeRequestDetail?.FeatureRequiringModification';
+
+    document.getElementById('currentFeature').value = currentFeatureValue;
+    document.getElementById('featureRequiringModification').value = featureRequiringModificationValue;
+
+    
+    $('.select2').select2();
+
+    $('#file-fr').fileinput({
+        theme: 'fa5',
+        language: 'fr',
+        uploadUrl: '#',
+        allowedFileExtensions: ['jpg', 'png', 'jpeg'],
+        previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+        overwriteInitial: false,
+        initialPreviewAsData: true,
+        initialPreview: initialPreviewArray
+    });
+
+    $('#deny-button').on('click', function () {
+        // Set the value of the hidden input field to indicate denial
+        $('#deny').val('true');
+
+        // Submit the form
+        $('#myForm').submit();
+    });
+
+
+</script>
+
+@if (Model.ChangeRequestDetail.ChangeRequestFlow.NextStateUserInCharge != UserSession.Id 
+     || (UserSession.IsInRole(Constants.RoleNames.Supporter) 
+     && Model.ChangeRequestDetail.ChangeRequestFlow.State != "Submitted" )
+     || (UserSession.IsInRole(Constants.RoleNames.BO)
+     && Model.ChangeRequestDetail.ChangeRequestFlow.State != "Supported")
+     || (UserSession.IsInRole(Constants.RoleNames.IT)
+     && Model.ChangeRequestDetail.ChangeRequestFlow.State != "Approved")
+     || (UserSession.IsInRole(Constants.RoleNames.Administrator)
+     && Model.ChangeRequestDetail.ChangeRequestFlow.State != "Assessed")
+    )
+{
+    <script type="text/javascript">
+        // Disable all form elements
+        $(document).ready(function () {
+            $('form *').prop('disabled', true);
+        });
+    </script>
+}

@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Builder
+@using Microsoft.Extensions.Options
+@using System.Text.Encodings.Web
+
+<div class="text-center">
+    <a href="~/Account/SetLanguage?culture=vi-VN&returnUrl=@(UrlEncoder.Default.Encode(Context.Request.Path + Context.Request.QueryString))">
+        <span class="label label-default"><span class="flag-icon flag-icon-vn"></span> VN</span>
+    </a>
+    <a href="~/Account/SetLanguage?culture=en-GB&returnUrl=@(UrlEncoder.Default.Encode(Context.Request.Path + Context.Request.QueryString))">
+        <span class="label label-default"><span class="flag-icon flag-icon-gb"></span> ENG</span>
+    </a>
+</div>
