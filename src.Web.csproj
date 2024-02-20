@@ -2755,6 +2755,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src.Core\src.Core.csproj" />
     <ProjectReference Include="..\src.Data\src.Data.csproj" />
     <ProjectReference Include="..\src.Emails\src.Emails.csproj" />
     <ProjectReference Include="..\src.Localization\src.Localization.csproj" />

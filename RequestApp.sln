@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Localization", "..\src.Localization\src.Localization.csproj", "{BFBF59C9-AB24-4C14-9D79-9654A3A6F14C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Core", "..\src.Core\src.Core.csproj", "{F1509A8F-5472-4DA6-9593-2AD6DCCCBFDB}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Web.Common", "..\src.Web.Common\src.Web.Common.csproj", "{F717C352-5EC2-4E34-B122-F9D8261FF5A7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Repositories", "..\src.Repositories\src.Repositories.csproj", "{3F8A0E8E-177A-4D0B-898D-3DB65EB22110}"
@@ -33,6 +35,10 @@ Global
 		{BFBF59C9-AB24-4C14-9D79-9654A3A6F14C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFBF59C9-AB24-4C14-9D79-9654A3A6F14C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFBF59C9-AB24-4C14-9D79-9654A3A6F14C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1509A8F-5472-4DA6-9593-2AD6DCCCBFDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1509A8F-5472-4DA6-9593-2AD6DCCCBFDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1509A8F-5472-4DA6-9593-2AD6DCCCBFDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1509A8F-5472-4DA6-9593-2AD6DCCCBFDB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F717C352-5EC2-4E34-B122-F9D8261FF5A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F717C352-5EC2-4E34-B122-F9D8261FF5A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F717C352-5EC2-4E34-B122-F9D8261FF5A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
