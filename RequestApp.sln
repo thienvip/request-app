@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Repositories", "..\src.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Data", "..\src.Data\src.Data.csproj", "{44F071AC-2783-4621-8F6F-C7CC2DB42800}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src.Emails", "..\src.Emails\src.Emails.csproj", "{9EBAA262-7F46-47E6-B81F-BAC1060EF81B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src.Emails", "..\src.Emails\src.Emails.csproj", "{9EBAA262-7F46-47E6-B81F-BAC1060EF81B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
